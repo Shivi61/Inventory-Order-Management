@@ -45,7 +45,7 @@ Render can build the Docker image straight from the repo using `render.yaml`.
    service (`inventory-backend`) plus a free PostgreSQL database (`inventory-db`).
 3. Click **Apply**. Render creates the database and injects `DATABASE_URL`
    automatically (via `fromDatabase` in the blueprint).
-4. After the first deploy, set the `CORS_ORIGINS` env var to your frontend URL
+4. After the first deploy, set the `ALLOWED_ORIGINS` env var to your frontend URL
    (you'll get it in step 3). For now you can leave it; we'll come back.
 5. Wait for the service to go live. Confirm the health check:
    `https://inventory-backend-xxxx.onrender.com/health` → `{"status":"ok"}`
@@ -80,7 +80,7 @@ environment variable.
 ## 4. Connect the two
 
 1. Go back to the backend on Render and set:
-   - `CORS_ORIGINS` = your Vercel URL (e.g. `https://<project>.vercel.app`)
+   - `ALLOWED_ORIGINS` = your Vercel URL (e.g. `https://<project>.vercel.app`)
    - You can list more than one, comma-separated.
 2. Redeploy the backend so the new CORS setting takes effect.
 

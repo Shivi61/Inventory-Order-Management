@@ -12,8 +12,10 @@ services:
         fromDatabase:
           name: inventory-db
           property: connectionString
-      - key: CORS_ORIGINS
+      - key: ALLOWED_ORIGINS
         sync: false # set to your deployed frontend URL
+      - key: SECRET_KEY
+        generateValue: true
       - key: LOW_STOCK_THRESHOLD
         value: "10"
 
