@@ -40,13 +40,13 @@ export default function Dashboard() {
         ))}
         <div className="card stat-card">
           <div className="stat-label">Low stock</div>
-          <div className="stat-value">{data.lowStockProducts.length}</div>
+          <div className="stat-value">{data.lowStockProducts}</div>
         </div>
       </div>
 
       <div className="card">
         <h3>Low stock products</h3>
-        {data.lowStockProducts.length === 0 ? (
+        {data.lowStockItems.length === 0 ? (
           <p className="muted">Everything is well stocked.</p>
         ) : (
           <div className="table-wrap">
@@ -59,7 +59,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {data.lowStockProducts.map((p) => (
+                {data.lowStockItems.map((p) => (
                   <tr key={p.id}>
                     <td>{p.name}</td>
                     <td>{p.sku}</td>
