@@ -4,6 +4,8 @@ import Modal from '../components/Modal.jsx'
 import Skeleton from '../components/Skeleton.jsx'
 import { useToast } from '../components/Toast.jsx'
 
+const STATUSES = ['pending', 'confirmed', 'completed', 'cancelled']
+
 export default function Orders() {
   const [orders, setOrders] = useState([])
   const [products, setProducts] = useState([])
@@ -95,6 +97,18 @@ export default function Orders() {
     try {
       await api.delete(`/orders/${o.id}`)
       notify('Order cancelled')
+      load()
+    } catch (err) {
+      notify(errorMessage(err), 'error')
+    }
+  }
+
+  async function changeStatus(order, status) {
+    if (status === order.status) return
+    try {
+      const res = await api.patch(`/orders/${order.id}/status`, { status })
+      notify(`Order marked ${status}`)
+      setDetail(res.data)
       load()
     } catch (err) {
       notify(errorMessage(err), 'error')
@@ -233,9 +247,20 @@ export default function Orders() {
           <p>
             <strong>Customer:</strong> {customerName(detail.customer_id)}
           </p>
-          <p>
-            <strong>Status:</strong> {detail.status}
-          </p>
+          <div className="form-group">
+            <label htmlFor="order-status">Status</label>
+            <select
+              id="order-status"
+              value={detail.status}
+              onChange={(e) => changeStatus(detail, e.target.value)}
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="table-wrap">
             <table>
               <thead>
