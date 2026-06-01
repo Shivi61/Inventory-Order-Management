@@ -18,6 +18,7 @@ def _serialize(order: models.Order) -> dict:
         "total_amount": order.total_amount,
         "status": order.status,
         "created_at": order.created_at,
+        "updated_at": order.updated_at,
         "items": [
             {
                 "product_id": item.product_id,

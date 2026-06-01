@@ -56,6 +56,7 @@ class CustomerOut(BaseModel):
     email: EmailStr
     phone: Optional[str]
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -90,6 +91,7 @@ class OrderOut(BaseModel):
     total_amount: Decimal
     status: str
     created_at: datetime
+    updated_at: datetime
     items: List[OrderItemOut]
 
     model_config = ConfigDict(from_attributes=True)
