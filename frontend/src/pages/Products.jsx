@@ -187,26 +187,29 @@ export default function Products() {
 
       {showForm && (
         <Modal title={editing ? 'Edit Product' : 'Add Product'} onClose={() => setShowForm(false)}>
-          <form onSubmit={submit}>
+          <form onSubmit={submit} noValidate>
             <div className="form-group">
-              <label>Name</label>
+              <label htmlFor="product-name">Name</label>
               <input
+                id="product-name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
               {errors.name && <div className="field-error">{errors.name}</div>}
             </div>
             <div className="form-group">
-              <label>SKU / Code</label>
+              <label htmlFor="product-sku">SKU / Code</label>
               <input
+                id="product-sku"
                 value={form.sku}
                 onChange={(e) => setForm({ ...form, sku: e.target.value })}
               />
               {errors.sku && <div className="field-error">{errors.sku}</div>}
             </div>
             <div className="form-group">
-              <label>Price</label>
+              <label htmlFor="product-price">Price</label>
               <input
+                id="product-price"
                 type="number"
                 step="0.01"
                 min="0.01"
@@ -216,8 +219,9 @@ export default function Products() {
               {errors.price && <div className="field-error">{errors.price}</div>}
             </div>
             <div className="form-group">
-              <label>Quantity in stock</label>
+              <label htmlFor="product-quantity">Quantity in stock</label>
               <input
+                id="product-quantity"
                 type="number"
                 min="0"
                 value={form.quantity}

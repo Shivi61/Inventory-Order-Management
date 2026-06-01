@@ -117,7 +117,7 @@ export default function Customers() {
 
       {showForm && (
         <Modal title="Add Customer" onClose={() => setShowForm(false)}>
-          <form onSubmit={submit}>
+          <form onSubmit={submit} noValidate>
             <div className="form-group">
               <label>Full name</label>
               <input

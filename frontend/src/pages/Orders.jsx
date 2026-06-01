@@ -165,7 +165,7 @@ export default function Orders() {
 
       {showForm && (
         <Modal title="New Order" onClose={() => setShowForm(false)}>
-          <form onSubmit={submit}>
+          <form onSubmit={submit} noValidate>
             <div className="form-group">
               <label>Customer</label>
               <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
