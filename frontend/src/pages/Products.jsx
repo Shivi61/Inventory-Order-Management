@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 import api, { errorMessage } from '../api/client.js'
 import Modal from '../components/Modal.jsx'
+import Skeleton from '../components/Skeleton.jsx'
 import { useToast } from '../components/Toast.jsx'
 
 const empty = { name: '', sku: '', price: '', quantity: '' }
+const PAGE_SIZE = 10
 
 export default function Products() {
   const [products, setProducts] = useState([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -17,8 +22,11 @@ export default function Products() {
   async function load() {
     setLoading(true)
     try {
-      const res = await api.get('/products')
-      setProducts(res.data)
+      const res = await api.get('/products', {
+        params: { page, page_size: PAGE_SIZE, search: search || undefined },
+      })
+      setProducts(res.data.items)
+      setTotal(res.data.total)
     } catch (err) {
       notify(errorMessage(err), 'error')
     } finally {
@@ -26,9 +34,12 @@ export default function Products() {
     }
   }
 
+  // Reload on page change immediately, and debounce search input.
   useEffect(() => {
-    load()
-  }, [])
+    const t = setTimeout(load, search ? 300 : 0)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search])
 
   function openAdd() {
     setEditing(null)
@@ -48,7 +59,7 @@ export default function Products() {
     const e = {}
     if (!form.name.trim()) e.name = 'Name is required'
     if (!form.sku.trim()) e.sku = 'SKU is required'
-    if (form.price === '' || Number(form.price) < 0) e.price = 'Enter a valid price'
+    if (form.price === '' || Number(form.price) <= 0) e.price = 'Price must be greater than 0'
     if (form.quantity === '' || Number(form.quantity) < 0 || !Number.isInteger(Number(form.quantity)))
       e.quantity = 'Enter a valid quantity'
     setErrors(e)
@@ -90,6 +101,8 @@ export default function Products() {
     }
   }
 
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+
   return (
     <div>
       <div className="page-head">
@@ -99,44 +112,77 @@ export default function Products() {
         </button>
       </div>
 
+      <div className="toolbar">
+        <input
+          placeholder="Search by name or SKU…"
+          value={search}
+          onChange={(e) => {
+            setPage(1)
+            setSearch(e.target.value)
+          }}
+        />
+      </div>
+
       {loading ? (
-        <p className="muted">Loading…</p>
+        <Skeleton rows={5} />
       ) : products.length === 0 ? (
-        <div className="empty">No products yet. Add your first one.</div>
+        <div className="empty">{search ? 'No matching products.' : 'No products yet.'}</div>
       ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>SKU</th>
-                <th>Price</th>
-                <th>In stock</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.name}</td>
-                  <td>{p.sku}</td>
-                  <td>${Number(p.price).toFixed(2)}</td>
-                  <td>{p.quantity}</td>
-                  <td>
-                    <div className="row-actions">
-                      <button className="btn-link" onClick={() => openEdit(p)}>
-                        Edit
-                      </button>
-                      <button className="btn-link" onClick={() => remove(p)}>
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>SKU</th>
+                  <th>Price</th>
+                  <th>In stock</th>
+                  <th></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {products.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.name}</td>
+                    <td>{p.sku}</td>
+                    <td>${Number(p.price).toFixed(2)}</td>
+                    <td>{p.quantity}</td>
+                    <td>
+                      <div className="row-actions">
+                        <button className="btn-link" onClick={() => openEdit(p)}>
+                          Edit
+                        </button>
+                        <button className="btn-link" onClick={() => remove(p)}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="pagination">
+            <button
+              className="btn btn-secondary"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </button>
+            <span className="muted">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="btn btn-secondary"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
 
       {showForm && (
@@ -163,7 +209,7 @@ export default function Products() {
               <input
                 type="number"
                 step="0.01"
-                min="0"
+                min="0.01"
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
               />

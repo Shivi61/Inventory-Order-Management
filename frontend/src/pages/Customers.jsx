@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api, { errorMessage } from '../api/client.js'
 import Modal from '../components/Modal.jsx'
+import Skeleton from '../components/Skeleton.jsx'
 import { useToast } from '../components/Toast.jsx'
 
 const empty = { full_name: '', email: '', phone: '' }
@@ -82,7 +83,7 @@ export default function Customers() {
       </div>
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <Skeleton rows={4} />
       ) : customers.length === 0 ? (
         <div className="empty">No customers yet.</div>
       ) : (

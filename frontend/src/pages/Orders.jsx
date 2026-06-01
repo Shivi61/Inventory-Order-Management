@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api, { errorMessage } from '../api/client.js'
 import Modal from '../components/Modal.jsx'
+import Skeleton from '../components/Skeleton.jsx'
 import { useToast } from '../components/Toast.jsx'
 
 export default function Orders() {
@@ -22,11 +23,11 @@ export default function Orders() {
     try {
       const [o, p, c] = await Promise.all([
         api.get('/orders'),
-        api.get('/products'),
+        api.get('/products', { params: { page_size: 1000 } }),
         api.get('/customers'),
       ])
       setOrders(o.data)
-      setProducts(p.data)
+      setProducts(p.data.items)
       setCustomers(c.data)
     } catch (err) {
       notify(errorMessage(err), 'error')
@@ -60,7 +61,7 @@ export default function Orders() {
 
   // Running total shown while building the order.
   const total = lines.reduce((sum, l) => {
-    const product = products.find((p) => p.id === Number(l.product_id))
+    const product = products.find((p) => p.id === l.product_id)
     if (!product) return sum
     return sum + Number(product.price) * Number(l.quantity || 0)
   }, 0)
@@ -74,13 +75,13 @@ export default function Orders() {
     }
     const items = lines
       .filter((l) => l.product_id && Number(l.quantity) > 0)
-      .map((l) => ({ product_id: Number(l.product_id), quantity: Number(l.quantity) }))
+      .map((l) => ({ product_id: l.product_id, quantity: Number(l.quantity) }))
     if (items.length === 0) {
       setFormError('Add at least one product')
       return
     }
     try {
-      await api.post('/orders', { customer_id: Number(customerId), items })
+      await api.post('/orders', { customer_id: customerId, items })
       notify('Order created')
       setShowForm(false)
       load()
@@ -115,7 +116,7 @@ export default function Orders() {
       </div>
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <Skeleton rows={5} />
       ) : orders.length === 0 ? (
         <div className="empty">No orders yet.</div>
       ) : (
@@ -127,22 +128,30 @@ export default function Orders() {
                 <th>Customer</th>
                 <th>Items</th>
                 <th>Total</th>
+                <th>Status</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {orders.map((o) => (
                 <tr key={o.id}>
-                  <td>#{o.id}</td>
+                  <td>#{o.id.slice(0, 8)}</td>
                   <td>{customerName(o.customer_id)}</td>
                   <td>{o.items.length}</td>
                   <td>${Number(o.total_amount).toFixed(2)}</td>
+                  <td>
+                    <span className={`badge badge-${o.status}`}>{o.status}</span>
+                  </td>
                   <td>
                     <div className="row-actions">
                       <button className="btn-link" onClick={() => setDetail(o)}>
                         View
                       </button>
-                      <button className="btn-link" onClick={() => cancelOrder(o)}>
+                      <button
+                        className="btn-link"
+                        onClick={() => cancelOrder(o)}
+                        disabled={o.status === 'cancelled'}
+                      >
                         Cancel
                       </button>
                     </div>

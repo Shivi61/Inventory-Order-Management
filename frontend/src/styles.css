@@ -250,6 +250,22 @@ tr:last-child td {
   background: #fdecec;
   color: var(--danger);
 }
+.badge-pending {
+  background: #fff4e0;
+  color: #b9770e;
+}
+.badge-confirmed {
+  background: #e6f0fe;
+  color: var(--primary-dark);
+}
+.badge-completed {
+  background: #e6f6ec;
+  color: var(--success);
+}
+.badge-cancelled {
+  background: #f0f1f3;
+  color: var(--muted);
+}
 
 /* Toasts */
 .toast-stack {
@@ -273,6 +289,54 @@ tr:last-child td {
 }
 .toast-error {
   background: var(--danger);
+}
+
+/* Skeleton loaders */
+.skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.skeleton-row {
+  height: 44px;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, #eceff3 25%, #f6f8fa 37%, #eceff3 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* Search + pagination */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.toolbar input {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .muted {
