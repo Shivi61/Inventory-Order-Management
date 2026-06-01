@@ -104,6 +104,20 @@ All configuration comes from environment variables (see `.env.example`):
 
 No credentials are hardcoded anywhere.
 
+## Seeding sample data
+
+To populate the database with a few products, customers and orders:
+
+```bash
+# with docker compose running
+docker compose exec backend python -m app.seed
+
+# or locally (after migrations)
+cd backend && python -m app.seed
+```
+
+The seed is idempotent — it does nothing if products already exist.
+
 ## Database migrations
 
 Schema is managed with Alembic.
