@@ -39,7 +39,7 @@ def _cancel(db: Session, order: models.Order) -> None:
         if product is not None:
             product.quantity += item.quantity
             inventory.record_movement(
-                db, product.id, item.quantity, "cancellation", order_id=order.id
+                db, product.id, item.quantity, inventory.ORDER_CANCELLED, order_id=order.id
             )
     order.status = "cancelled"
 
@@ -76,7 +76,7 @@ def create_order(payload: schemas.OrderCreate, db: Session = Depends(get_db)):
     db.add(order)
     db.flush()  # need the order id before logging stock movements
     for product_id, qty in requested.items():
-        inventory.record_movement(db, product_id, -qty, "order", order_id=order.id)
+        inventory.record_movement(db, product_id, -qty, inventory.ORDER_CREATED, order_id=order.id)
 
     db.commit()
     db.refresh(order)

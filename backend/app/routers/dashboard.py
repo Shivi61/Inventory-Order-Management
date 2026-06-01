@@ -22,5 +22,6 @@ def summary(db: Session = Depends(get_db)):
         .filter(models.Customer.deleted_at.is_(None))
         .count(),
         "total_orders": db.query(models.Order).count(),
-        "low_stock_products": low_stock,
+        "low_stock_products": len(low_stock),
+        "low_stock_items": low_stock,
     }

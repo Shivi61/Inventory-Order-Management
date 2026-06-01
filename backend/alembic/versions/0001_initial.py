@@ -69,8 +69,8 @@ def upgrade():
         sa.Column("id", GUID(), primary_key=True),
         sa.Column("product_id", GUID(), sa.ForeignKey("products.id"), nullable=False),
         sa.Column("order_id", GUID(), sa.ForeignKey("orders.id"), nullable=True),
-        sa.Column("change", sa.Integer(), nullable=False),
-        sa.Column("reason", sa.String(length=30), nullable=False),
+        sa.Column("quantity_changed", sa.Integer(), nullable=False),
+        sa.Column("transaction_type", sa.String(length=40), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=True),
     )
 

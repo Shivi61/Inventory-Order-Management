@@ -93,9 +93,9 @@ class InventoryTransaction(Base):
     product_id = Column(GUID(), ForeignKey("products.id"), nullable=False)
     order_id = Column(GUID(), ForeignKey("orders.id"), nullable=True)
     # Positive when stock goes up, negative when it goes down.
-    change = Column(Integer, nullable=False)
-    # initial | adjustment | order | cancellation
-    reason = Column(String(30), nullable=False)
+    quantity_changed = Column(Integer, nullable=False)
+    # Product Added | Stock Updated | Order Created | Order Cancelled
+    transaction_type = Column(String(40), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     product = relationship("Product")

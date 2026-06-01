@@ -6,4 +6,5 @@ def test_dashboard_uses_camel_case(client, product, customer):
     assert body["totalCustomers"] == 1
     assert body["totalOrders"] == 0
     # The Widget fixture has quantity 5, which is below the default threshold.
-    assert len(body["lowStockProducts"]) == 1
+    assert body["lowStockProducts"] == 1
+    assert len(body["lowStockItems"]) == 1

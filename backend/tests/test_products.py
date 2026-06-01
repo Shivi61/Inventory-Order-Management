@@ -67,6 +67,6 @@ def test_soft_delete_hides_product(client, product):
 def test_quantity_change_records_transaction(client, product):
     client.put(f"/api/v1/products/{product['id']}", json={"quantity": 8})
     txns = client.get(f"/api/v1/inventory-transactions?product_id={product['id']}").json()
-    reasons = {t["reason"] for t in txns}
-    assert "initial" in reasons
-    assert "adjustment" in reasons
+    types = {t["transaction_type"] for t in txns}
+    assert "Product Added" in types
+    assert "Stock Updated" in types

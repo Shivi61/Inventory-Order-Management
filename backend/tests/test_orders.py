@@ -49,5 +49,5 @@ def test_invalid_status_rejected(client, product, customer):
 def test_order_records_inventory_transactions(client, product, customer):
     order = _order(client, customer["id"], product["id"], 2).json()
     txns = client.get(f"/api/v1/inventory-transactions?product_id={product['id']}").json()
-    order_txn = [t for t in txns if t["reason"] == "order"]
-    assert order_txn and order_txn[0]["change"] == -2
+    order_txn = [t for t in txns if t["transaction_type"] == "Order Created"]
+    assert order_txn and order_txn[0]["quantity_changed"] == -2

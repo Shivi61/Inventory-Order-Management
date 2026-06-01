@@ -100,8 +100,8 @@ class InventoryTransactionOut(BaseModel):
     id: UUID
     product_id: UUID
     order_id: Optional[UUID]
-    change: int
-    reason: str
+    quantity_changed: int
+    transaction_type: str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -114,4 +114,7 @@ class DashboardSummary(BaseModel):
     total_products: int
     total_customers: int
     total_orders: int
-    low_stock_products: List[ProductOut]
+    # Count of low-stock products (matches the documented dashboard contract).
+    low_stock_products: int
+    # The actual low-stock products, used to render the dashboard table.
+    low_stock_items: List[ProductOut]

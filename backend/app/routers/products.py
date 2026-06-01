@@ -25,7 +25,7 @@ def create_product(payload: schemas.ProductCreate, db: Session = Depends(get_db)
     product = models.Product(**payload.model_dump())
     db.add(product)
     db.flush()  # assign the id before recording the opening stock
-    inventory.record_movement(db, product.id, product.quantity, "initial")
+    inventory.record_movement(db, product.id, product.quantity, inventory.PRODUCT_ADDED)
     db.commit()
     db.refresh(product)
     return product
@@ -75,7 +75,7 @@ def update_product(
     # If the quantity is being adjusted, log the movement.
     if "quantity" in data and data["quantity"] != product.quantity:
         inventory.record_movement(
-            db, product.id, data["quantity"] - product.quantity, "adjustment"
+            db, product.id, data["quantity"] - product.quantity, inventory.STOCK_UPDATED
         )
 
     for field, value in data.items():
