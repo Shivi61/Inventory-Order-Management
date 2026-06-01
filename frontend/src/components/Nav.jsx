@@ -5,6 +5,7 @@ const links = [
   { to: '/products', label: 'Products' },
   { to: '/customers', label: 'Customers' },
   { to: '/orders', label: 'Orders' },
+  { to: '/inventory', label: 'Inventory' },
 ]
 
 export default function Nav() {

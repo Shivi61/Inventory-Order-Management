@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import Products from './pages/Products.jsx'
 import Customers from './pages/Customers.jsx'
 import Orders from './pages/Orders.jsx'
+import Inventory from './pages/Inventory.jsx'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/inventory" element={<Inventory />} />
         </Routes>
       </main>
     </ToastProvider>

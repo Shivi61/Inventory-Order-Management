@@ -339,6 +339,15 @@ tr:last-child td {
   cursor: not-allowed;
 }
 
+.change-up {
+  color: var(--success);
+  font-weight: 600;
+}
+.change-down {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 .muted {
   color: var(--muted);
 }
