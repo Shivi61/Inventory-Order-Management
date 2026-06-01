@@ -20,7 +20,7 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS}
       LOW_STOCK_THRESHOLD: ${LOW_STOCK_THRESHOLD}
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -31,7 +31,7 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL}
     ports:
-      - "5173:80"
+      - "${FRONTEND_PORT:-5173}:80"
     depends_on:
       - backend
 
