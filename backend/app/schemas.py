@@ -1,15 +1,17 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
+from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic.alias_generators import to_camel
 
 
 # ---- Product ----
 class ProductBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     sku: str = Field(..., min_length=1, max_length=60)
-    price: Decimal = Field(..., ge=0)
+    price: Decimal = Field(..., gt=0)
     quantity: int = Field(..., ge=0)
 
 
@@ -20,16 +22,25 @@ class ProductCreate(ProductBase):
 class ProductUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=150)
     sku: Optional[str] = Field(None, min_length=1, max_length=60)
-    price: Optional[Decimal] = Field(None, ge=0)
+    price: Optional[Decimal] = Field(None, gt=0)
     quantity: Optional[int] = Field(None, ge=0)
 
 
 class ProductOut(ProductBase):
-    id: int
+    id: UUID
     created_at: datetime
+    updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductPage(BaseModel):
+    """Paginated list of products."""
+
+    items: List[ProductOut]
+    total: int
+    page: int
+    page_size: int
 
 
 # ---- Customer ----
@@ -40,51 +51,66 @@ class CustomerCreate(BaseModel):
 
 
 class CustomerOut(BaseModel):
-    id: int
+    id: UUID
     full_name: str
     email: EmailStr
     phone: Optional[str]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---- Order ----
 class OrderItemIn(BaseModel):
-    product_id: int
+    product_id: UUID
     quantity: int = Field(..., gt=0)
 
 
 class OrderCreate(BaseModel):
-    customer_id: int
+    customer_id: UUID
     items: List[OrderItemIn] = Field(..., min_length=1)
 
 
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
 class OrderItemOut(BaseModel):
-    product_id: int
+    product_id: UUID
     product_name: Optional[str] = None
     quantity: int
     unit_price: Decimal
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderOut(BaseModel):
-    id: int
-    customer_id: int
+    id: UUID
+    customer_id: UUID
     total_amount: Decimal
     status: str
     created_at: datetime
     items: List[OrderItemOut]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-# ---- Dashboard ----
+# ---- Inventory transactions ----
+class InventoryTransactionOut(BaseModel):
+    id: UUID
+    product_id: UUID
+    order_id: Optional[UUID]
+    change: int
+    reason: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ---- Dashboard (camelCase to match the spec) ----
 class DashboardSummary(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
     total_products: int
     total_customers: int
     total_orders: int
