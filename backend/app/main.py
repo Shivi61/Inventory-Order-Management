@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .database import Base, engine
+from .routers import products
 
 # Create tables on startup. For a small project this is simpler than wiring up
 # Alembic migrations.
@@ -21,6 +22,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(products.router)
 
 
 @app.get("/health")
