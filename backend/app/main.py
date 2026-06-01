@@ -47,4 +47,4 @@ for module in (products, customers, orders, dashboard, inventory):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "healthy"}
