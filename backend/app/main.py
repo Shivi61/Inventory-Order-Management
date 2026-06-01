@@ -1,33 +1,48 @@
-import os
+import json
+import logging
+import time
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import models
-from .database import Base, engine
-from .routers import customers, dashboard, orders, products
+from .config import ALLOWED_ORIGINS, API_PREFIX
+from .routers import customers, dashboard, inventory, orders, products
 
-# Create tables on startup. For a small project this is simpler than wiring up
-# Alembic migrations.
-Base.metadata.create_all(bind=engine)
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger("api")
 
 app = FastAPI(title="Inventory & Order Management API")
 
-# Allowed origins come from the environment so the deployed frontend domain can
-# be added without touching the code.
-origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in origins if o.strip()],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-app.include_router(products.router)
-app.include_router(customers.router)
-app.include_router(orders.router)
-app.include_router(dashboard.router)
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Emit a structured log line for every request."""
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = round((time.perf_counter() - start) * 1000, 2)
+    logger.info(
+        json.dumps(
+            {
+                "method": request.method,
+                "path": request.url.path,
+                "status": response.status_code,
+                "duration_ms": duration_ms,
+            }
+        )
+    )
+    return response
+
+
+# All resource routes are versioned under /api/v1.
+for module in (products, customers, orders, dashboard, inventory):
+    app.include_router(module.router, prefix=API_PREFIX)
 
 
 @app.get("/health")
