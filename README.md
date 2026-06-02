@@ -1,36 +1,130 @@
 # Inventory & Order Management System
 
-A full-stack app for managing products, customers and orders with inventory tracking.
+A production-oriented full-stack app for managing products, customers, orders and
+inventory tracking.
 
-- **Backend:** FastAPI + SQLAlchemy + PostgreSQL (Alembic migrations)
-- **Frontend:** React (Vite)
-- **Containerized** with Docker and Docker Compose
+## Tech stack
+
+| Layer            | Technology                                            |
+| ---------------- | ----------------------------------------------------- |
+| Frontend         | React 18 (Vite, JavaScript), React Router, Axios      |
+| Backend          | Python, FastAPI, SQLAlchemy 2, Pydantic v2, Uvicorn   |
+| Database         | PostgreSQL (Alembic migrations)                       |
+| Containerization | Docker (multi-stage builds), Docker Compose           |
+| Web server       | Nginx (serves the built frontend)                     |
+| Tests            | Pytest (backend), Vitest + Testing Library (frontend) |
+
+## Architecture
+
+Three containerized services orchestrated with Docker Compose. The frontend is a
+static React build served by Nginx; it talks to the FastAPI backend over JSON/HTTP;
+the backend persists everything in PostgreSQL.
+
+```
+        ┌─────────────────┐      JSON / HTTP      ┌──────────────────────┐     SQL    ┌──────────────┐
+        │  React + Vite   │ ───── /api/v1/* ────▶ │   FastAPI (Uvicorn)  │ ─────────▶ │  PostgreSQL  │
+ user ▶ │  served by Nginx│ ◀──── responses ───── │                      │ ◀───────── │              │
+        └─────────────────┘                       └──────────────────────┘            └──────────────┘
+          frontend service                          backend service                     db service
+          (Vercel in prod)                           (Render in prod)                    (Neon in prod)
+```
+
+**Request flow (backend):**
+
+```
+HTTP request
+   │
+   ▼
+CORS middleware ─▶ version-redirect middleware (/-bare → /api/v1) ─▶ structured logging middleware
+   │
+   ▼
+Router (products / customers / orders / dashboard / inventory-transactions)
+   │
+   ▼
+Pydantic schema validation  ──▶  business logic  ──▶  SQLAlchemy models / session
+   │                                                        │
+   ▼                                                        ▼
+JSON response                                          PostgreSQL
+```
+
+- **Routers** ([backend/app/routers/](backend/app/routers/)) define endpoints; each is mounted under `/api/v1`.
+- **Schemas** ([schemas.py](backend/app/schemas.py)) validate input and shape output with Pydantic.
+- **Models** ([models.py](backend/app/models.py)) are SQLAlchemy ORM tables; a portable `GUID` type gives UUID keys on Postgres (and works under SQLite in tests).
+- **Migrations** are Alembic; the container runs `alembic upgrade head` on startup before serving.
+- **Middleware** handles CORS, redirects unversioned paths to the current API version, and emits structured request logs.
 
 ## Features
 
-- Product management with search and pagination; unique SKUs; price must be > 0
-- Customer management with unique emails
-- Orders with multiple line items and a status workflow
-  (pending / confirmed / completed / cancelled)
-- Inventory rules:
-  - product quantity can never go negative
-  - an order is rejected if stock is insufficient
-  - placing an order automatically reduces stock
-  - cancelling an order returns the stock and keeps the order on record
-  - the order total is always calculated on the backend
-- Every stock movement is recorded as an inventory transaction (audit history)
-- UUID primary keys and `created_at` / `updated_at` audit fields
-- Soft deletes for products and customers (records are kept, just hidden)
-- Dashboard with totals and a low-stock list
-- Structured request logging
-- Tests: Pytest (backend) and Vitest + Testing Library (frontend)
+### Product management
+- Create, list, retrieve, update, soft-delete
+- Unique SKU (enforced in code → `409`, and at the DB level)
+- Price must be greater than 0; quantity can never be negative (Pydantic + DB CHECK)
+- Server-side **search** (name or SKU) and **pagination**
+
+### Customer management
+- Create, list, retrieve, soft-delete
+- Unique email with format validation (→ `409` on duplicate)
+
+### Order management
+- Create orders with **multiple line items**
+- **Status workflow**: pending → confirmed → completed / cancelled (`PATCH /orders/{id}/status`)
+- Cancelling an order **restores stock** and **keeps the record** (status set to `cancelled`)
+- Order total is **always computed by the backend** (clients cannot override it)
+- Unit prices are snapshotted at order time
+
+### Inventory & business rules
+- Orders are rejected when stock is insufficient → `400 {"message": "Insufficient inventory"}`
+- Placing an order automatically **reduces stock**, all in one transaction
+- **Inventory transaction history** — every movement is logged (Product Added /
+  Stock Updated / Order Created / Order Cancelled) with a signed quantity change
+
+### Dashboard & analytics
+- Totals for products, customers, orders, plus a low-stock count and the low-stock list
+
+### Production-oriented engineering
+- **API versioning** under `/api/v1` (bare paths 307-redirect to the current version)
+- **UUID primary keys** and `created_at` / `updated_at` **audit fields** on all tables
+- **Soft deletes** for products and customers (records retained, hidden from queries)
+- **Alembic migrations** applied automatically on container startup
+- **Structured JSON request logging** (method, path, status, duration)
+- **OpenAPI / Swagger** docs at `/docs`; **health check** at `/health`
+- Database **indexes** on `sku`, `name`, and `email`
+- **Environment-based configuration** — no hardcoded credentials
+
+### Frontend & UX
+- Responsive layout for desktop, tablet and mobile
+- Pages: Dashboard, Products, Customers, Orders, Inventory history
+- Client-side **form validation**, **toast** success/error messages, **skeleton loaders**, empty states
+- Organized component structure with React hooks for state management
+
+### Testing & tooling
+- Backend **Pytest** suite (products, customers, orders, inventory, dashboard, versioning)
+- Frontend **Vitest + Testing Library** component tests
+- Idempotent database **seed script** for sample data
 
 ## Project layout
 
 ```
-backend/    FastAPI service + Alembic migrations + tests
-frontend/   React (Vite) app + tests
+backend/
+  app/
+    routers/      # products, customers, orders, dashboard, inventory-transactions
+    models.py     # SQLAlchemy ORM models
+    schemas.py    # Pydantic request/response schemas
+    config.py     # env-based settings
+    inventory.py  # stock-movement helper
+    seed.py       # sample data
+    main.py       # app, middleware, router wiring
+  alembic/        # migrations
+  tests/          # pytest suite
+  Dockerfile      # multi-stage build
+frontend/
+  src/
+    pages/        # Dashboard, Products, Customers, Orders, Inventory
+    components/   # Nav, Modal, Toast, Skeleton
+    api/          # axios client
+  Dockerfile      # build -> nginx
 docker-compose.yml
+render.yaml       # backend deploy blueprint
 ```
 
 ## Running locally with Docker
