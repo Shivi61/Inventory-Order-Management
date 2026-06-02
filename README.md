@@ -53,7 +53,9 @@ PostgreSQL data is kept in a named volume (`pgdata`).
 
 ## API overview
 
-All routes are versioned under `/api/v1`.
+All routes are versioned under `/api/v1`. For convenience, unversioned requests
+(e.g. `POST /products`) are redirected (HTTP 307, preserving method and body) to
+the current version, so both `/products` and `/api/v1/products` work.
 
 | Method | Path                              | Description                       |
 | ------ | --------------------------------- | --------------------------------- |
