@@ -158,11 +158,11 @@ export default function Orders() {
                   </td>
                   <td>
                     <div className="row-actions">
-                      <button className="btn-link" onClick={() => setDetail(o)}>
+                      <button className="btn btn-sm btn-outline" onClick={() => setDetail(o)}>
                         View
                       </button>
                       <button
-                        className="btn-link"
+                        className="btn btn-sm btn-danger-soft"
                         onClick={() => cancelOrder(o)}
                         disabled={o.status === 'cancelled'}
                       >

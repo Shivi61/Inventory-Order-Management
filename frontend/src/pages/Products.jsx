@@ -149,10 +149,10 @@ export default function Products() {
                     <td>{p.quantity}</td>
                     <td>
                       <div className="row-actions">
-                        <button className="btn-link" onClick={() => openEdit(p)}>
+                        <button className="btn btn-sm btn-outline" onClick={() => openEdit(p)}>
                           Edit
                         </button>
-                        <button className="btn-link" onClick={() => remove(p)}>
+                        <button className="btn btn-sm btn-danger-soft" onClick={() => remove(p)}>
                           Delete
                         </button>
                       </div>

@@ -104,7 +104,7 @@ export default function Customers() {
                   <td>{c.email}</td>
                   <td>{c.phone || '—'}</td>
                   <td>
-                    <button className="btn-link" onClick={() => remove(c)}>
+                    <button className="btn btn-sm btn-danger-soft" onClick={() => remove(c)}>
                       Delete
                     </button>
                   </td>
