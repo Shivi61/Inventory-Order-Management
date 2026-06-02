@@ -49,6 +49,12 @@ def test_list_is_paginated(client):
     assert body["page"] == 1
 
 
+def test_large_page_size_allowed(client):
+    # The orders/inventory pages request many products at once.
+    res = client.get("/api/v1/products?page_size=1000")
+    assert res.status_code == 200
+
+
 def test_search_filters_by_name(client):
     client.post("/api/v1/products", json={"name": "Apple", "sku": "A1", "price": 1, "quantity": 1})
     client.post("/api/v1/products", json={"name": "Banana", "sku": "B1", "price": 1, "quantity": 1})

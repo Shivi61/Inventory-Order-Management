@@ -36,7 +36,7 @@ def list_products(
     db: Session = Depends(get_db),
     search: str | None = Query(None, description="Match against name or SKU"),
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=200),
+    page_size: int = Query(20, ge=1, le=1000),
 ):
     query = db.query(models.Product).filter(models.Product.deleted_at.is_(None))
     if search:
