@@ -1,25 +1,23 @@
-# Render blueprint for the backend + managed PostgreSQL.
-# In the Render dashboard: New > Blueprint, point it at this repo.
+# Render blueprint for the backend (free web service, no credit card needed).
+# Render's free managed Postgres was retired, so point DATABASE_URL at a free
+# external Postgres such as Neon (https://neon.tech) — no card required.
+#
+# In the Render dashboard: New > Blueprint, point it at this repo, then set
+# DATABASE_URL and ALLOWED_ORIGINS when prompted.
 services:
   - type: web
     name: inventory-backend
     runtime: docker
+    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: inventory-db
-          property: connectionString
+        sync: false # paste your Neon connection string (include ?sslmode=require)
       - key: ALLOWED_ORIGINS
         sync: false # set to your deployed frontend URL
       - key: SECRET_KEY
         generateValue: true
       - key: LOW_STOCK_THRESHOLD
         value: "10"
-
-databases:
-  - name: inventory-db
-    databaseName: inventory
-    plan: free
